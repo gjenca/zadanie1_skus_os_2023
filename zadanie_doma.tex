@@ -1,0 +1,120 @@
+\documentclass{article}
+\usepackage{framed}
+\usepackage{fancyvrb}
+\usepackage{color}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\newcommand{\codefile}[1]{\begin{framed}\input{#1}\end{framed}}
+\newcommand{\codefilesmall}[1]{\begin{framed}\small\input{#1}\end{framed}}
+\input{pygments}
+\begin{document}
+\title{Transformácia jednoduchého značkovacieho jazyka do HTML\\
+(domáce zadanie OS ZS 2021/22)}
+\maketitle
+
+\section{Zadanie}
+Vytvorte skript {\tt markdown.sh}, ktorý bude na štandardnom vstupe
+očakávať vstup v značkovacom jazyku, ktorý je čiastočnou implementáciou
+\href{https://www.markdownguide.org/}{jazyka markdown}. Na výstupe bude produkovať
+HTML podľa doleuvedených pokynov.
+
+Použitie bude teda napríklad
+\begin{framed}
+\include{example.sh}
+\end{framed}
+a výstup potom bude v jazyku HTML. Výstup si potom môžete otvoriť v nejakom internetovom
+prehliadači, napríklad
+\begin{framed}
+\include{firefox.sh}
+\end{framed}
+\section{Notácia}
+V doleuvedenom značí znak {\textvisiblespace} medzeru.
+\section{Požadovaný výstup}
+\subsection{Hlavička}
+Na začiatku skript vypíše konštantný text
+\begin{framed}
+\small
+\include{header.html}
+\end{framed}
+\subsection{Odstavce}
+Riadok, ktorý obsahuje iba medzery transformujte na riadok
+\codefile{p.html}
+\subsection{Veľký nadpis}
+Ak riadok začína znakmi {\tt \#\textvisiblespace}, transformujte ho podľa
+pravidla
+\begin{center}
+{\tt \#\textvisiblespace}{\em text}$\quad\to\quad${\tt <h1>}{\em text}{\tt </h1>}
+\end{center}
+Napríklad riadok
+\codefile{h1.md}
+sa transformuje na
+\codefile{h1.html}
+\subsection{Menší nadpis}
+Ak riadok začína znakmi {\tt \#\#\textvisiblespace}, transformujte ho podľa
+pravidla
+\begin{center}
+{\tt \#\#\textvisiblespace}{\em text}$\quad\to\quad${\tt <h2>}{\em text}{\tt </h2>}
+\end{center}
+Napríklad riadok
+\codefile{h2.md}
+sa transformuje na
+\codefile{h2.html}
+\subsection{Zvýrazňovanie}
+Kdekoľvek na riadku sa nachádza reťazec typu {\tt \_\_}{\em text}{\tt \_\_},
+\footnote{Znak \_ je podčiarkovník.}
+nahraďte ho podľa pravidla
+\begin{center}
+{\tt \_\_}{\em text}{\tt \_\_}$\quad\to\quad${\tt <strong>}{\em text}{\tt </strong>}
+\end{center}
+Kdekoľvek na riadku sa nachádza reťazec typu {\tt \_}{\em text}{\tt \_},
+nahraďte ho podľa pravidla
+\begin{center}
+{\tt \_}{\em text}{\tt \_}$\quad\to\quad${\tt <em>}{\em text}{\tt </em>}
+\end{center}
+Pritom {\em text} nesmie obsahovať podčiarkovníky.
+Napríklad riadky
+\codefile{emphasis.md}
+sa transformujú na riadky
+\codefilesmall{emphasis.html}
+Dávajte si pozor na to, že riadok môže obsahovať viacero sekvencií horeuvedeného
+typu.
+\subsection{Pätička}
+Na konci skript vypíše konštantný text
+\begin{framed}
+\include{footer.html}
+\end{framed}
+\section{Pomôcky a návody}
+Napíšem, ako som zadanie implementoval ja.
+
+\begin{itemize}
+\item
+Použil som idióm {\tt while} -- {\tt read}
+\codefile{whileread.sh}
+Vo vnútri cyklu som potom mal k dispozícii postupne jednotlivé riadky {\em stdin} 
+v premennej {\tt LINE}.
+\item Testovanie, či obsah premennej {\tt LINE} sedí s regulárnym výrazom
+{\tt regex} som robil podľa vzoru
+\codefile{ifechogrep.sh}
+Tento idióm funguje takto:
+\begin{enumerate}
+\item Konštrukt {\tt if {\em príkaz}} testuje, či exit status {\em príkaz} je rovný 0.
+\item Exit status rúrovej sekvencie je exit status posledného príkazu v rúrovej sekvencii.
+\item Príkaz {\tt grep 'regex'} má exit status 0 práve vtedy, keď nájde ten {\em
+regex} na svojom vstupe
+\item sekvencia ~~{\tt > /dev/null} slúži na zrušenie normálneho výstupu príkazu 
+{\tt grep} -- chceme iba testovať, nechceme aby niečo vypisoval.
+\end{enumerate}
+\item Používal som idióm 
+\codefile{transformline.sh}
+pre transformáciu obsahu premennej {\tt LINE} pomocou {\tt sed}
+\item Pripomínam, že vo {\tt while} je možné používať {\tt continue}.
+\item V {\tt sed} som používal {\tt @} miesto {\tt /} na ohraničenie regulárneho výrazu,
+pretože HTML obsahuje {\tt /}.
+\item V {\tt sed} som používal spätnú referenciu cez {\tt \textbackslash 1} v časti {\tt replace}.
+\item V {\tt sed} som používal flag {\tt g}, to jest {\tt 's@regex@replace@g'},
+ak bolo treba.  
+\end{itemize}
+
+\section{Príklad vstupu a výstupu}
+Je v tomto repozitári; {\tt example.md} je vstup a {\tt example.html} je výstup.
+\end{document}

@@ -1,0 +1,82 @@
+\documentclass{article}
+\usepackage{framed}
+\usepackage{fancyvrb}
+\usepackage{color}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\newcommand{\codefile}[1]{\begin{framed}\input{#1}\end{framed}}
+\newcommand{\codefilesmall}[1]{\begin{framed}\small\input{#1}\end{framed}}
+\newcommand{\codefilenoframedsmall}[1]{{\small\input{#1}}}
+\newcommand{\codefilenoframedtiny}[1]{{\tiny\input{#1}}}
+\newcommand{\tvs}{\textvisiblespace}
+\input{pygments}
+\begin{document}
+\title{Transformácia jednoduchého značkovacieho jazyka do HTML\\
+(skúšobné zadanie OS ZS 2021/22)}
+\maketitle
+
+\section{Zadanie}
+
+Rozšírte {\tt markdown.sh} z domáceho zadania tak, aby podporoval tieto
+ďalšie syntaktické konštrukty.
+
+\subsection{URL}
+Kdekoľvek na riadku sa nachádza reťazec typu {\tt <https://}{\em text}{\tt>},
+nahraďte ho podľa pravidla
+\begin{center}
+{\tt <https://}{\em text}{\tt>}
+$\quad\to\quad$
+{\tt <a href="https://}{\em text}{\tt ">https://}{\em text}{\tt </a>}
+\end{center}
+napríklad riadok
+\codefile{url.md}
+sa transformuje na
+\codefile{url.html}
+
+\subsection{Zoznamy}
+
+Začnite s tým, že zmeníte 
+\codefile{whileold.sh}
+na
+\codefile{whilenew.sh}
+Je to kvôli tomu, že príkaz {\tt read LINE} za normálnych okolností
+zahadzuje počiatočné medzery na riadku.
+
+Transformujte každú sekvenciu riadkov typu
+\codefile{list.md}
+na sekvenciu typu
+\codefile{list.html}
+To znamená
+\begin{itemize}
+\item Ak narazíte na prvý výskyt {\tt \tvs-\tvs}\footnote{\tvs ~znamená medzeru.} na začiatku riadku vypíšte najprv
+riadok {\tt <ul>} 
+\item
+Riadky v zozname transformujte podľa pravidla
+\begin{center}
+{\tt\tvs-\tvs}{\em text}$\quad\to\quad${\tt <li>}{\em text}{\tt </li>} 
+\end{center}
+\item Ak narazíte na nejaký riadok ktorý nezačína {\tt \tvs-\tvs} a
+\underline{predtým bol zoznam}, je to koniec zoznamu a pred ďalším spracovaním
+vypíšte {\tt </ol>}, aby ste ten zoznam správne ukončili.
+\end{itemize}
+
+\section{Pomôcky}
+
+\subsection{Použite spätné referencie}
+
+V prvej časti je rozumné použiť {\tt sed /}{\it regex}/{\it replacement}{\tt /}, pričom v {\it replacement} budete referencovať cez {\tt $\backslash$1} časť {\it regex}, ktorú ste vyznačili pomocou $\backslash(\dots\backslash)$.
+
+\subsection{Pomocná premenná}
+Pre spracovanie zoznamov potrebujete nejakú pomocnú premennú, kde si budete
+pamätať, či ste uprostred zoznamu alebo nie, povedzme {\tt ZOZ}. Jej rovnosť
+nejakej hodnote môžete zistiť pomocou {\tt if} a {\tt test}
+\codefile{iftest.sh}
+prípadne (pozor na medzery!)
+\codefile{ifbra.sh}
+\newpage
+\subsection{Vstup (príklad)}
+\codefilenoframedsmall{example.md}
+\newpage
+\subsection{Výstup (príklad)}
+\codefilenoframedtiny{example.html}
+\end{document}
